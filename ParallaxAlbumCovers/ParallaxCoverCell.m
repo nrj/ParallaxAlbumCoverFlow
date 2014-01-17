@@ -19,9 +19,10 @@
         const NSInteger numberImageViews = 5;
         const CGFloat   alphaDecrease    = 0.20;
         const CGFloat   deviceScale      = [[UIScreen mainScreen] scale];
+        const CGFloat   insetAmount      = 2.0f;
         
-        // We use the height for the size of each image view. So the parallax
-        // amount will be the difference in width divided by 2 for each side.
+        // We only use the height dimension for our image view. So the padding
+        // on either side will be the difference in width divided by 2.
         parallaxAmount = (frame.size.width - frame.size.height) / 2.0;
         
         CGRect imageRect;
@@ -32,6 +33,11 @@
         
         NSMutableArray *mutable = [NSMutableArray array];
         for (NSInteger i = 0; i < numberImageViews; i++) {
+            
+            if (i > 0) {
+                imageRect.size.width -= insetAmount;
+                imageRect.origin.y -= insetAmount;
+            }
             
             UIImageView *imageView;
             imageView = [[UIImageView alloc] initWithFrame:imageRect];
@@ -53,28 +59,27 @@
 
 - (void)setParallaxPosition:(CGFloat)position {
     
-    const CGFloat minPosition = 1.0;
-    const CGFloat maxPosition = -1.0;
     const CGFloat minOffsetX  = -parallaxAmount;
     const CGFloat maxOffsetX  = parallaxAmount;
     
-    // Linear Equation
+    const CGFloat minPosition = 1.0;
+    const CGFloat maxPosition = -1.0;
+
+    // Compute the total offset using a linear equation
     CGFloat offsetX = (maxOffsetX - minOffsetX) / (maxPosition - minPosition) * (position - minPosition) + minOffsetX;
+
+    // Divide the total offset among the moving images
     offsetX /= ([imageViews count] - 1);
     
-    const CGFloat offsetMultiple = 2.0f;
-    
-    CGRect frame = [[imageViews objectAtIndex:0] frame];
-    
+    // Apply the offsetX to each image relative to the first one
+    CGRect fixedRect = [[imageViews objectAtIndex:0] frame];
     for (NSInteger i = 1; i < [imageViews count]; i++) {
         
-        CGFloat width = frame.size.width - (offsetMultiple * i);
-        CGFloat height = frame.size.height - (offsetMultiple * i);
-        CGFloat yPos = frame.origin.y - (offsetMultiple * i);
-        CGFloat xPos = frame.origin.x + 0.5 * (frame.size.width - width) + (offsetX * i);
-        
         UIImageView *imageView = [imageViews objectAtIndex:i];
-        [imageView setFrame:CGRectMake(xPos, yPos, width, height)];
+        CGRect imageRect = [imageView frame];
+        CGFloat imageWidth = imageRect.size.width;
+        imageRect.origin.x = CGRectGetMidX(fixedRect) - 0.5 * imageWidth + (offsetX * i);
+        [imageView setFrame:imageRect];
     }
 }
 

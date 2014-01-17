@@ -54,17 +54,16 @@
  */
 - (CGFloat)parallaxPositionForCell:(UICollectionViewCell *)cell {
     
-    CGSize itemSize = [collectionViewLayout itemSize];
     CGRect frame = [cell frame];
-    CGPoint localPoint = [[cell superview] convertPoint:frame.origin toView:collectionView];
+    CGPoint point = [[cell superview] convertPoint:frame.origin toView:collectionView];
     
-    const CGFloat minX = CGRectGetMinX([collectionView bounds]) - itemSize.width; // off screen to the left
-    const CGFloat maxX = CGRectGetMaxX([collectionView bounds]);                  // off screen to the right
+    const CGFloat minX = CGRectGetMinX([collectionView bounds]) - frame.size.width; // off screen to the left
+    const CGFloat maxX = CGRectGetMaxX([collectionView bounds]);                    // off screen to the right
     const CGFloat minPos = -1.0f;
     const CGFloat maxPos = 1.0f;
     
-    // Compute the position. This is a linear equation.
-    return (maxPos - minPos) / (maxX - minX) * (localPoint.x - minX) + minPos;
+    // Compute the position with a linear equation.
+    return (maxPos - minPos) / (maxX - minX) * (point.x - minX) + minPos;
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
